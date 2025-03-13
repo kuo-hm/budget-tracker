@@ -1,24 +1,15 @@
-# syntax=docker/dockerfile:1.5
-# --- Build Stage ---
-FROM maven:3.8.5-openjdk-17 AS builder
+FROM eclipse-temurin:17-jdk-focal
+
 WORKDIR /app
 
-# Download dependencies and build the application
-RUN --mount=type=bind,source=pom.xml,target=/app/pom.xml,readonly \
-    --mount=type=bind,source=.mvn,target=/app/.mvn,readonly \
-    ./mvnw dependency:go-offline
-RUN --mount=type=bind,source=src,target=/app/src,readonly \
-    ./mvnw package -DskipTests
+COPY .env .env
 
-# --- Run Stage ---
-FROM openjdk:17-jdk-slim
-WORKDIR /app
+COPY .mvn/ .mvn
+COPY mvnw pom.xml ./
+RUN ./mvnw dependency:go-offline
 
-# Copy the built JAR file from the builder stage
-COPY --from=builder /app/target/*.jar app.jar
+COPY src ./src
 
-# Expose the port your Spring Boot app runs on (default is 8080)
-EXPOSE 8080
+CMD ["./mvnw", "spring-boot:run"]
 
-# Command to run the application
-ENTRYPOINT ["java", "-jar", "app.jar"]
+EXPOSE 8001
