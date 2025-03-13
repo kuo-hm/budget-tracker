@@ -7,6 +7,8 @@ import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.RegisterReq
 import com.budget_tracker.tracker.budget_tracker.entity.User;
 import com.budget_tracker.tracker.budget_tracker.enums.Role;
 import com.budget_tracker.tracker.budget_tracker.exception.AuthenticationException;
+import com.budget_tracker.tracker.budget_tracker.exception.DuplicateEmailException;
+import com.budget_tracker.tracker.budget_tracker.exception.user.UserNotFoundException;
 import com.budget_tracker.tracker.budget_tracker.repositories.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
@@ -26,6 +28,12 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
+
+        if (userRepository.existsByEmail(request.getEmail())) {
+            throw new DuplicateEmailException("Email is already in use");
+        }
+
+
         var user= User.builder()
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
@@ -53,7 +61,8 @@ public class AuthService {
             throw new AuthenticationException("Invalid email or password");
         }
 
-        var user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+        var user = userRepository.findByEmail(request.getEmail()) .orElseThrow(() -> new UserNotFoundException("User not found"));
+
         var jwtToken = jwtService.generateToken(user);
         return AuthenticationResponse.builder()
                 .token(jwtToken)

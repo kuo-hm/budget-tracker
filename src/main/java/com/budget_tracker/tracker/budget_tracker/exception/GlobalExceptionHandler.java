@@ -1,6 +1,7 @@
 package com.budget_tracker.tracker.budget_tracker.exception;
 
 import com.budget_tracker.tracker.budget_tracker.exception.dto.CustomErrorResponse;
+import com.budget_tracker.tracker.budget_tracker.exception.user.UserNotFoundException;
 import org.springframework.boot.context.config.ConfigDataResourceNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -9,7 +10,6 @@ import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.context.request.WebRequest;
 
 import java.time.LocalDateTime;
-
 
 // Handles exceptions globally
 @ControllerAdvice
@@ -22,15 +22,14 @@ public class GlobalExceptionHandler {
                 .body("An unexpected error occurred: " + ex.getMessage());
     }
 
-    // Handle entity not found (e.g., UserNotFoundException)
-    @ExceptionHandler(ConfigDataResourceNotFoundException.class)
+    // Handle resource not found exceptions
+    @ExceptionHandler(ResourceNotFoundException.class)
     public ResponseEntity<String> handleResourceNotFoundException(ResourceNotFoundException ex) {
         return ResponseEntity.status(HttpStatus.NOT_FOUND)
                 .body(ex.getMessage());
     }
 
-
-
+    // Handle authentication exceptions
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<CustomErrorResponse> handleAuthenticationException(AuthenticationException ex, WebRequest request) {
         HttpStatus status = HttpStatus.BAD_REQUEST;
@@ -43,6 +42,13 @@ public class GlobalExceptionHandler {
                 .build();
 
         return ResponseEntity.status(status).body(errorResponse);
+    }
+    @ExceptionHandler(DuplicateEmailException.class)
+    public ResponseEntity<String> handleDuplicateEmail(DuplicateEmailException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.BAD_REQUEST);
+    }  @ExceptionHandler(UserNotFoundException.class)
+    public ResponseEntity<String> handleDuplicateEmail(UserNotFoundException ex) {
+        return new ResponseEntity<>(ex.getMessage(), HttpStatus.NOT_FOUND);
     }
 
 

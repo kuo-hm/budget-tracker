@@ -1,0 +1,716 @@
+openapi: 3.0.0
+info:
+  title: Budget Tracker API
+  description: >-
+    API for managing personal finances - tracking income, expenses, and
+    categories.
+  version: 1.0.0
+servers:
+  - url: http://localhost:8080/api
+tags:
+  - name: Users
+    description: Operations related to user accounts
+  - name: Categories
+    description: Operations for managing income and expense categories
+  - name: Transactions
+    description: Operations for recording and managing financial transactions
+  - name: Reports
+    description: Endpoints for generating financial reports and summaries
+components:
+  schemas:
+    UserRegistrationRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username for the new user
+        email:
+          type: string
+          format: email
+          description: Email address for the new user
+        password:
+          type: string
+          description: Password for the new user
+      required:
+        - username
+        - email
+        - password
+    LoginRequest:
+      type: object
+      properties:
+        username:
+          type: string
+          description: Username for login
+        password:
+          type: string
+          description: Password for login
+      required:
+        - username
+        - password
+    UserProfile:
+      type: object
+      properties:
+        userId:
+          type: integer
+          format: int64
+          description: Unique identifier for the user
+          readOnly: true
+        username:
+          type: string
+          description: Username
+        email:
+          type: string
+          format: email
+          description: Email address
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp of user creation
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp of last update
+          readOnly: true
+    CategoryRequest:
+      type: object
+      properties:
+        name:
+          type: string
+          description: Name of the category
+        type:
+          type: string
+          enum:
+            - INCOME
+            - EXPENSE
+          description: Type of the category (INCOME or EXPENSE)
+      required:
+        - name
+        - type
+    CategoryResponse:
+      type: object
+      properties:
+        categoryId:
+          type: integer
+          format: int64
+          description: Unique identifier for the category
+          readOnly: true
+        name:
+          type: string
+          description: Name of the category
+        type:
+          type: string
+          enum:
+            - INCOME
+            - EXPENSE
+          description: Type of the category
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp of category creation
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp of last update
+          readOnly: true
+    TransactionRequest:
+      type: object
+      properties:
+        date:
+          type: string
+          format: date
+          description: Date of the transaction (YYYY-MM-DD)
+        amount:
+          type: number
+          format: float
+          description: Amount of the transaction
+        categoryId:
+          type: integer
+          format: int64
+          description: ID of the category for this transaction
+        description:
+          type: string
+          nullable: true
+          description: Optional description of the transaction
+        transactionType:
+          type: string
+          enum:
+            - INCOME
+            - EXPENSE
+          description: Type of the transaction (INCOME or EXPENSE)
+      required:
+        - date
+        - amount
+        - categoryId
+        - transactionType
+    TransactionResponse:
+      type: object
+      properties:
+        transactionId:
+          type: integer
+          format: int64
+          description: Unique identifier for the transaction
+          readOnly: true
+        date:
+          type: string
+          format: date
+          description: Date of the transaction (YYYY-MM-DD)
+        amount:
+          type: number
+          format: float
+          description: Amount of the transaction
+        categoryId:
+          type: integer
+          format: int64
+          description: ID of the category for this transaction
+        description:
+          type: string
+          nullable: true
+          description: Optional description of the transaction
+        transactionType:
+          type: string
+          enum:
+            - INCOME
+            - EXPENSE
+          description: Type of the transaction (INCOME or EXPENSE)
+        createdAt:
+          type: string
+          format: date-time
+          description: Timestamp of transaction creation
+          readOnly: true
+        updatedAt:
+          type: string
+          format: date-time
+          description: Timestamp of last update
+          readOnly: true
+        category:
+          $ref: '#/components/schemas/CategoryResponse'
+          description: Category details for the transaction
+    BalanceReportResponse:
+      type: object
+      properties:
+        balance:
+          type: number
+          format: float
+          description: Balance for the given period (Total Income - Total Expenses)
+    SummaryReportResponse:
+      type: object
+      properties:
+        totalIncome:
+          type: number
+          format: float
+          description: Total income for the given period
+        totalExpenses:
+          type: number
+          format: float
+          description: Total expenses for the given period
+    CategorySpendingReportResponse:
+      type: array
+      items:
+        type: object
+        properties:
+          categoryName:
+            type: string
+            description: Name of the category
+          totalSpent:
+            type: number
+            format: float
+            description: Total amount spent in this category
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+paths:
+  /users/register:
+    post:
+      tags:
+        - Users
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserRegistrationRequest'
+      responses:
+        '201':
+          description: User registered successfully
+        '400':
+          description: Bad request (e.g., invalid input)
+        '500':
+          description: Internal server error
+  /users/login:
+    post:
+      tags:
+        - Users
+      summary: Login user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/LoginRequest'
+      responses:
+        '200':
+          description: User logged in successfully
+        '400':
+          description: Bad request
+        '401':
+          description: Authentication failed (invalid credentials)
+        '500':
+          description: Internal server error
+  /users/logout:
+    post:
+      tags:
+        - Users
+      summary: Logout user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User logged out successfully
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+  /users/me:
+    get:
+      tags:
+        - Users
+      summary: Get current user's profile
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: User profile details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - Users
+      summary: Update current user's profile
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/UserProfile'
+      responses:
+        '200':
+          description: User profile updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UserProfile'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+  /categories:
+    get:
+      tags:
+        - Categories
+      summary: Get all categories for the logged-in user
+      security:
+        - bearerAuth: []
+      responses:
+        '200':
+          description: List of categories
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/CategoryResponse'
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+    post:
+      tags:
+        - Categories
+      summary: Create a new category
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '201':
+          description: Category created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+  /categories/{categoryId}:
+    get:
+      tags:
+        - Categories
+      summary: Get a specific category by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category to retrieve
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Category details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '401':
+          description: Unauthorized - authentication required
+        '404':
+          description: Category not found
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - Categories
+      summary: Update a category
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category to update
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/CategoryRequest'
+      responses:
+        '200':
+          description: Category updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategoryResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized - authentication required
+        '404':
+          description: Category not found
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+        - Categories
+      summary: Delete a category
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: categoryId
+          in: path
+          required: true
+          description: ID of the category to delete
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Category deleted successfully (No Content)
+        '401':
+          description: Unauthorized - authentication required
+        '404':
+          description: Category not found
+        '500':
+          description: Internal server error
+  /transactions:
+    get:
+      tags:
+        - Transactions
+      summary: Get all transactions for the logged-in user (with optional filters)
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          description: Filter transactions by start date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          description: Filter transactions by end date (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: categoryId
+          in: query
+          description: Filter transactions by category ID
+          schema:
+            type: integer
+            format: int64
+        - name: transactionType
+          in: query
+          description: Filter transactions by type (INCOME or EXPENSE)
+          schema:
+            type: string
+            enum:
+              - INCOME
+              - EXPENSE
+      responses:
+        '200':
+          description: List of transactions
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/TransactionResponse'
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+    post:
+      tags:
+        - Transactions
+      summary: Create a new transaction
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionRequest'
+      responses:
+        '201':
+          description: Transaction created successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+  /transactions/{transactionId}:
+    get:
+      tags:
+        - Transactions
+      summary: Get a specific transaction by ID
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: ID of the transaction to retrieve
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '200':
+          description: Transaction details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '401':
+          description: Unauthorized - authentication required
+        '404':
+          description: Transaction not found
+        '500':
+          description: Internal server error
+    put:
+      tags:
+        - Transactions
+      summary: Update a transaction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: ID of the transaction to update
+          schema:
+            type: integer
+            format: int64
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/TransactionRequest'
+      responses:
+        '200':
+          description: Transaction updated successfully
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/TransactionResponse'
+        '400':
+          description: Bad request
+        '401':
+          description: Unauthorized - authentication required
+        '404':
+          description: Transaction not found
+        '500':
+          description: Internal server error
+    delete:
+      tags:
+        - Transactions
+      summary: Delete a transaction
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: ID of the transaction to delete
+          schema:
+            type: integer
+            format: int64
+      responses:
+        '204':
+          description: Transaction deleted successfully (No Content)
+        '401':
+          description: Unauthorized - authentication required
+        '404':
+          description: Transaction not found
+        '500':
+          description: Internal server error
+  /reports/balance:
+    get:
+      tags:
+        - Reports
+      summary: Get balance for a given period
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          description: Start date for the report (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          description: End date for the report (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Balance report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/BalanceReportResponse'
+        '400':
+          description: Bad request (e.g., missing date parameters)
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+  /reports/summary:
+    get:
+      tags:
+        - Reports
+      summary: Get summary of income and expenses for a given period
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          description: Start date for the report (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          description: End date for the report (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Summary report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/SummaryReportResponse'
+        '400':
+          description: Bad request (e.g., missing date parameters)
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+  /reports/category-spending:
+    get:
+      tags:
+        - Reports
+      summary: Get spending summary by category for a given period
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: startDate
+          in: query
+          required: true
+          description: Start date for the report (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+        - name: endDate
+          in: query
+          required: true
+          description: End date for the report (YYYY-MM-DD)
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Category spending report
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/CategorySpendingReportResponse'
+        '400':
+          description: Bad request (e.g., missing date parameters)
+        '401':
+          description: Unauthorized - authentication required
+        '500':
+          description: Internal server error
+security:
+  - bearerAuth: []

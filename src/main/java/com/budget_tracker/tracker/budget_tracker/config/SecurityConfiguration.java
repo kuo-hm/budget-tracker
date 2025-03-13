@@ -23,7 +23,7 @@ public class SecurityConfiguration {
 
         http.csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(authorize -> authorize
-                        .requestMatchers("/auth/**", "/swagger-ui/**", "/swagger-ui.html", "/v3/api-docs/**", "/webjars/**")
+                        .requestMatchers("/auth/**", "/swagger-ui/**", "/swagger-ui.html", "/api-docs/**","/v3/**", "/webjars/**")
                         .permitAll()
                         .anyRequest()
                         .authenticated()
