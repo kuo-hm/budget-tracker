@@ -1,17 +1,22 @@
 package com.budget_tracker.tracker.budget_tracker.controller.auth;
 
-import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.LoginRequest;
-import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.RegisterRequest;
-import com.budget_tracker.tracker.budget_tracker.services.auth.AuthService;
-import jakarta.validation.Valid;
-import lombok.RequiredArgsConstructor;
+import java.util.HashMap;
+import java.util.Map;
+
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-import java.util.HashMap;
-import java.util.Map;
+import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.LoginRequest;
+import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.RegisterRequest;
+import com.budget_tracker.tracker.budget_tracker.services.auth.AuthService;
+
+import jakarta.validation.Valid;
+import lombok.RequiredArgsConstructor;
 
 @RestController
 @RequestMapping("/auth")
@@ -45,7 +50,7 @@ public class AuthController {
             @Valid @RequestBody LoginRequest request,
             BindingResult bindingResult
     ) {
-        // Check if there are validation errors
+
         if (bindingResult.hasErrors()) {
             Map<String, String> errors = new HashMap<>();
             bindingResult.getAllErrors().forEach(error -> {
@@ -56,7 +61,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(errors);
         }
 
-        // Proceed with login if validation passes
         return ResponseEntity.ok(authService.login(request));
     }
+
 }

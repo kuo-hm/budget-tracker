@@ -83,5 +83,13 @@ public class User implements UserDetails {
         }
     }
 
+    public void setPassword(String password, BCryptPasswordEncoder passwordEncoder) {
+        if (password != null && !password.isEmpty()) {
+            this.password = passwordEncoder.encode(password);
+        }
+    }
+
+
+    
 
 }
