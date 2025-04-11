@@ -76,7 +76,6 @@ public class TransactionService {
         if (param.getSortBy() != null && param.getOrderBy() != null) {
             pageable = PageRequest.of(page, limit, param.getOrderBy().equalsIgnoreCase("asc") ? Sort.by(param.getSortBy()).ascending() : Sort.by(param.getSortBy()).descending());
         }
-        System.out.println("keyword: " + startDate + " " + endDate);
 
         Page<Transaction> transactionsPage = transactionRepository.findByKeywordAndType(keyword, type, pageable, user.getId(), startDate, endDate);
         GetTransactionsResponse.Metadata metadata = new GetTransactionsResponse.Metadata(

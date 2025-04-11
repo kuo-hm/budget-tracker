@@ -59,6 +59,8 @@ public class User implements UserDetails {
     private List<Categories> categories; // List of categories created by the user
     @OneToMany(mappedBy = "createdBy")
     private List<Transaction> transaction; // List of categories created by the user
+    @OneToMany(mappedBy = "createdBy")
+    private List<Budget> budget; // List of categories created by the user
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

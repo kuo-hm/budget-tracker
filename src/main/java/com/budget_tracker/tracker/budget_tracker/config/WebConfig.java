@@ -15,6 +15,6 @@ public class WebConfig implements WebMvcConfigurer {
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(jwtInterceptor).addPathPatterns("/user/**", "/categories/**", "/transactions/**"); // Apply only to user endpoints
+        registry.addInterceptor(jwtInterceptor).addPathPatterns("/user/**", "/categories/**", "/transactions/**","/udget/**" ); // Apply only to user endpoints
     }
 }
