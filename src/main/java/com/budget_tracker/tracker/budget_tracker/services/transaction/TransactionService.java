@@ -1,6 +1,6 @@
 package com.budget_tracker.tracker.budget_tracker.services.transaction;
 
-import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 import org.hibernate.Hibernate;
@@ -64,8 +64,8 @@ public class TransactionService {
         String type = (param != null && param.getType() != null) ? param.getType().toString() : null;
         int limit = (param != null && param.getLimit() != null) ? param.getLimit() : 10; // Added null check for param.getLimit()
         int page = (param != null && param.getPage() != null) ? param.getPage() - 1 : 0; // Added null check for param.getPage()
-        LocalDate startDate = param.getStartDate();
-        LocalDate endDate = param.getEndDate();
+        LocalDateTime startDate = (param != null && param.getStartDate() != null) ? param.getStartDate().atStartOfDay() : null;
+        LocalDateTime endDate = (param != null && param.getEndDate() != null) ? param.getEndDate().atTime(23, 59, 59) : null;
 
         if (page < 0) {
             page = 0;
@@ -76,6 +76,7 @@ public class TransactionService {
         if (param.getSortBy() != null && param.getOrderBy() != null) {
             pageable = PageRequest.of(page, limit, param.getOrderBy().equalsIgnoreCase("asc") ? Sort.by(param.getSortBy()).ascending() : Sort.by(param.getSortBy()).descending());
         }
+        System.out.println("keyword: " + startDate + " " + endDate);
 
         Page<Transaction> transactionsPage = transactionRepository.findByKeywordAndType(keyword, type, pageable, user.getId(), startDate, endDate);
         GetTransactionsResponse.Metadata metadata = new GetTransactionsResponse.Metadata(
