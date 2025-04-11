@@ -40,6 +40,9 @@ public class TransactionService {
             throw new NotFoundException("Name is already in use");
 
         }
+
+        System.out.println("userEmail: " + body);
+        System.out.println("category sear: " + category.getCategoryName());
         var transactionEntity = new Transaction();
         transactionEntity.setDescription(body.getDescription());
         transactionEntity.setAmount(body.getAmount());
@@ -47,6 +50,7 @@ public class TransactionService {
         transactionEntity.setTransactionDate(body.getDate());
         transactionEntity.setTransactionCategory(category);
         transactionEntity.setCreatedBy(user);
+
         transactionRepository.save(transactionEntity);
     }
 
@@ -83,19 +87,26 @@ public class TransactionService {
 
         List<GetTransactionsResponse.TransactionItem> transactionItems = transactionsPage.getContent().stream()
                 .map(transaction -> {
-                    Hibernate.initialize(transaction.getTransactionCategory()); // Ensure transactionCategory is initialized
+                    Hibernate.initialize(transaction.getTransactionCategory());
+                    GetTransactionsResponse.CategoryItem categoryItem = new GetTransactionsResponse.CategoryItem(
+                            transaction.getTransactionCategory().getId(),
+                            transaction.getTransactionCategory().getName(),
+                            transaction.getTransactionCategory().getDescription(),
+                            transaction.getTransactionCategory().getCreatedAt().toString(),
+                            transaction.getTransactionCategory().getUpdatedAt().toString(),
+                            transaction.getTransactionCategory().getType().toString()
+                    );
                     return new GetTransactionsResponse.TransactionItem(
                             transaction.getId(),
                             transaction.getAmount(),
                             transaction.getDescription(),
                             transaction.getCreatedAt().toString(),
+                            transaction.getUpdatedAt().toString(),
                             transaction.getType().toString(),
-                            transaction.getTransactionDate().toString(),
-                            transaction.getTransactionCategory(),
-                            transaction.getCreatedAt() // Assuming this is the LocalDateTime field
+                            categoryItem,
+                            transaction.getTransactionDate()
                     );
                 }).toList();
-
         return new GetTransactionsResponse(transactionItems, metadata);
     }
 }

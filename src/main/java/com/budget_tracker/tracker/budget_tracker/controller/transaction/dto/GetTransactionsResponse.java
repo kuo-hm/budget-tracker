@@ -3,8 +3,6 @@ package com.budget_tracker.tracker.budget_tracker.controller.transaction.dto;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import com.budget_tracker.tracker.budget_tracker.entity.Categories;
-
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
@@ -37,8 +35,20 @@ public class GetTransactionsResponse {
         private String createdAt;
         private String updatedAt;
         private String type;
-        private Categories transactionCategory;
+        private CategoryItem transactionCategory;
         private LocalDateTime transactionDate;
 
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class CategoryItem {
+
+        private Long id;
+        private String name;
+        private String description;
+        private String createdAt;
+        private String updatedAt;
+        private String type;
     }
 }

@@ -9,7 +9,7 @@ import com.budget_tracker.tracker.budget_tracker.entity.Transaction;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Number> {
 
-    @Query(value = "SELECT * FROM transaction c WHERE "
+    @Query(value = "SELECT * FROM transactions c WHERE "
             + "(:keyword IS NULL OR LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND "
             + "(:type IS NULL OR c.type = :type) AND "
             + "(:userId IS NULL OR c.created_by = :userId)",

@@ -2,6 +2,7 @@ package com.budget_tracker.tracker.budget_tracker.entity;
 
 import java.time.LocalDateTime;
 
+import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.budget_tracker.tracker.budget_tracker.enums.CategoryType;
@@ -45,10 +46,12 @@ public class Transaction {
     @Enumerated(EnumType.STRING)
     private CategoryType type;
 
+    @CreationTimestamp
     private LocalDateTime createdAt;
 
     @UpdateTimestamp
-
+    private LocalDateTime updatedAt;
+    
     private LocalDateTime transactionDate;
 
     @ManyToOne
