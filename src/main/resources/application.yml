@@ -18,12 +18,9 @@ spring:
     defer-datasource-initialization: true
 
   flyway:
-    enabled: true
     baseline-on-migrate: true
-    baseline-version: 1
     validate-on-migrate: true # Ensures Flyway checks for inconsistencies
-    locations: classpath:db/migration # Path where migration scripts are stored
-    clean-disabled: false # Allow cleaning the database (use cautiously)
+
   mail:
     host: ${SPRING_MAIL_HOST}
     port: ${SPRING_MAIL_PORT}
@@ -45,6 +42,13 @@ server:
   port: ${SERVER_PORT}
   servlet:
     context-path: ${SERVER_CONTEXT_PATH}
+  error:
+    include-stacktrace: never
+    include-message: always
+    include-binding-errors: never
+    include-path: never
+  compression:
+    enabled: true
 
 springdoc:
   api-docs:

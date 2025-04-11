@@ -12,8 +12,8 @@ import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.LoginReques
 import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.RegisterRequest;
 import com.budget_tracker.tracker.budget_tracker.entity.User;
 import com.budget_tracker.tracker.budget_tracker.enums.Role;
-import com.budget_tracker.tracker.budget_tracker.exception.DuplicateEmailException;
-import com.budget_tracker.tracker.budget_tracker.exception.user.UserNotFoundException;
+import com.budget_tracker.tracker.budget_tracker.exception.common.ConflictException;
+import com.budget_tracker.tracker.budget_tracker.exception.common.NotFoundException;
 import com.budget_tracker.tracker.budget_tracker.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
@@ -29,7 +29,7 @@ public class AuthService {
     public AuthenticationResponse register(RegisterRequest request) {
 
         if (userRepository.existsByEmail(request.getEmail())) {
-            throw new DuplicateEmailException("Email is already in use");
+            throw new ConflictException("Email is already in use");
         }
 
         var user = User.builder()
@@ -54,7 +54,7 @@ public class AuthService {
 
         if (authenticate.isAuthenticated()) {
 
-            var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new UserNotFoundException("User not found"));
+            var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new NotFoundException("User not found"));
 
             var jwtToken = jwtService.generateToken(user);
             return AuthenticationResponse.builder()

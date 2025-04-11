@@ -1,6 +1,5 @@
 package com.budget_tracker.tracker.budget_tracker.controller.user;
 
-
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -15,7 +14,6 @@ import com.budget_tracker.tracker.budget_tracker.services.user.UserService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-
 
 @RestController
 @RequestMapping("/user")

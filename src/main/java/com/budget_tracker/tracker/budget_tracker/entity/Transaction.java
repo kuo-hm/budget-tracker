@@ -1,9 +1,7 @@
 package com.budget_tracker.tracker.budget_tracker.entity;
 
 import java.time.LocalDateTime;
-import java.util.List;
 
-import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.budget_tracker.tracker.budget_tracker.enums.CategoryType;
@@ -16,7 +14,6 @@ import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
-import jakarta.persistence.OneToMany;
 import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -29,35 +26,33 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Entity
 @Table(
-        name = "categories"
+        name = "transactions"
 )
-public class Categories {
+public class Transaction {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    private String name;
+    private Double amount;
 
     private String description;
 
-    @CreationTimestamp
-    private LocalDateTime createdAt;
-
-    @UpdateTimestamp
-    private LocalDateTime updatedAt;
+    @ManyToOne
+    @JoinColumn(name = "transactionCategory", nullable = false)
+    private Categories transactionCategory;
 
     @Enumerated(EnumType.STRING)
     private CategoryType type;
+
+    private LocalDateTime createdAt;
+
+    @UpdateTimestamp
+
+    private LocalDateTime transactionDate;
 
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
     private User createdBy;
 
-    @OneToMany(mappedBy = "transactionCategory")
-    private List<Transaction> transaction;
-
-    public String getCategoryName() {
-        return name;
-    }
 }

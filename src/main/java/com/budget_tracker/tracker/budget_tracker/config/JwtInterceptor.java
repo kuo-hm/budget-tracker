@@ -1,15 +1,15 @@
 package com.budget_tracker.tracker.budget_tracker.config;
 
-import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
-import com.budget_tracker.tracker.budget_tracker.config.JwtService;
+
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
 
 @Component
 public class JwtInterceptor implements HandlerInterceptor {
 
-    private final JwtService  jwtService;
+    private final JwtService jwtService;
 
     public JwtInterceptor(JwtService jwtService) {
         this.jwtService = jwtService;

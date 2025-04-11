@@ -4,20 +4,30 @@ import java.time.LocalDateTime;
 import java.util.Collection;
 import java.util.List;
 
-import jakarta.persistence.*;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.budget_tracker.tracker.budget_tracker.enums.Role;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.OneToMany;
+import jakarta.persistence.PrePersist;
+import jakarta.persistence.PreUpdate;
+import jakarta.persistence.Table;
+import jakarta.persistence.UniqueConstraint;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 @Data
 @Builder
@@ -27,10 +37,8 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 @Table(
         name = "users",
         uniqueConstraints = {
-                @UniqueConstraint(columnNames = "email"),
-        }
+            @UniqueConstraint(columnNames = "email"),}
 )
-
 public class User implements UserDetails {
 
     @Id
@@ -46,6 +54,11 @@ public class User implements UserDetails {
     private LocalDateTime updatedAt;
     @Enumerated(EnumType.STRING)
     private Role role;
+
+    @OneToMany(mappedBy = "createdBy")
+    private List<Categories> categories; // List of categories created by the user
+    @OneToMany(mappedBy = "createdBy")
+    private List<Transaction> transaction; // List of categories created by the user
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {
@@ -66,7 +79,7 @@ public class User implements UserDetails {
     }
 
     public String getFullName() {
-        return (firstName + " " + lastName );
+        return (firstName + " " + lastName);
     }
 
     @Override
@@ -88,8 +101,5 @@ public class User implements UserDetails {
             this.password = passwordEncoder.encode(password);
         }
     }
-
-
-    
 
 }

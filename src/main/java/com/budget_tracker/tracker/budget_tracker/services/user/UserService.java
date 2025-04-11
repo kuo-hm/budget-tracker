@@ -8,23 +8,21 @@ import org.springframework.stereotype.Service;
 import com.budget_tracker.tracker.budget_tracker.controller.user.dto.UpdateRequest;
 import com.budget_tracker.tracker.budget_tracker.controller.user.dto.UserDetailResponse;
 import com.budget_tracker.tracker.budget_tracker.entity.User;
-import com.budget_tracker.tracker.budget_tracker.exception.ResourceNotFoundException;
+import com.budget_tracker.tracker.budget_tracker.exception.common.NotFoundException;
 import com.budget_tracker.tracker.budget_tracker.repositories.UserRepository;
 
 import lombok.RequiredArgsConstructor;
-
 
 @Service
 @RequiredArgsConstructor
 public class UserService {
 
-    private  final UserRepository userRepository;
+    private final UserRepository userRepository;
     private final BCryptPasswordEncoder passwordEncoder; // Injected BCryptPasswordEncoder
-
 
     public UserDetailResponse me(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         return UserDetailResponse.builder()
                 .username(user.getUsername())
@@ -35,10 +33,9 @@ public class UserService {
                 .build();
     }
 
-
     public void updateUser(String email, UpdateRequest request) {
         User user = userRepository.findByEmail(email)
-                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
+                .orElseThrow(() -> new NotFoundException("User not found"));
 
         if (request.getFirstName() != null && !request.getFirstName().isEmpty()) {
             user.setFirstName(request.getFirstName());
@@ -59,12 +56,12 @@ public class UserService {
         List<User> users = userRepository.findAll();
         return users.stream()
                 .map(user -> UserDetailResponse.builder()
-                        .username(user.getUsername())
-                        .email(user.getEmail())
-                        .firstName(user.getFirstName())
-                        .lastName(user.getLastName())
-                        .role(user.getRole())
-                        .build()
+                .username(user.getUsername())
+                .email(user.getEmail())
+                .firstName(user.getFirstName())
+                .lastName(user.getLastName())
+                .role(user.getRole())
+                .build()
                 ).toArray(UserDetailResponse[]::new);
     }
 
