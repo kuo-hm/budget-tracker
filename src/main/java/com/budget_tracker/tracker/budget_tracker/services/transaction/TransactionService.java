@@ -1,5 +1,6 @@
 package com.budget_tracker.tracker.budget_tracker.services.transaction;
 
+import java.time.LocalDate;
 import java.util.List;
 
 import org.hibernate.Hibernate;
@@ -41,8 +42,6 @@ public class TransactionService {
 
         }
 
-        System.out.println("userEmail: " + body);
-        System.out.println("category sear: " + category.getCategoryName());
         var transactionEntity = new Transaction();
         transactionEntity.setDescription(body.getDescription());
         transactionEntity.setAmount(body.getAmount());
@@ -65,11 +64,12 @@ public class TransactionService {
         String type = (param != null && param.getType() != null) ? param.getType().toString() : null;
         int limit = (param != null && param.getLimit() != null) ? param.getLimit() : 10; // Added null check for param.getLimit()
         int page = (param != null && param.getPage() != null) ? param.getPage() - 1 : 0; // Added null check for param.getPage()
+        LocalDate startDate = param.getStartDate();
+        LocalDate endDate = param.getEndDate();
+
         if (page < 0) {
             page = 0;
         }
-
-        System.out.println(param);
 
         Pageable pageable = PageRequest.of(page, limit);
 
@@ -77,7 +77,7 @@ public class TransactionService {
             pageable = PageRequest.of(page, limit, param.getOrderBy().equalsIgnoreCase("asc") ? Sort.by(param.getSortBy()).ascending() : Sort.by(param.getSortBy()).descending());
         }
 
-        Page<Transaction> transactionsPage = transactionRepository.findByKeywordAndType(keyword, type, pageable, user.getId());
+        Page<Transaction> transactionsPage = transactionRepository.findByKeywordAndType(keyword, type, pageable, user.getId(), startDate, endDate);
         GetTransactionsResponse.Metadata metadata = new GetTransactionsResponse.Metadata(
                 transactionsPage.getTotalElements(),
                 transactionsPage.getTotalPages(),
@@ -108,5 +108,73 @@ public class TransactionService {
                     );
                 }).toList();
         return new GetTransactionsResponse(transactionItems, metadata);
+    }
+
+    public void deleteTransaction(String userEmail, Number id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Transaction not found"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (!transaction.getCreatedBy().getId().equals(user.getId())) {
+            throw new NotFoundException("Transaction not found");
+        }
+
+        transactionRepository.delete(transaction);
+    }
+
+    public void updateTransaction(CreateTransactionRequest body, String userEmail, Number id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Transaction not found"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (!transaction.getCreatedBy().getId().equals(user.getId())) {
+            throw new NotFoundException("Transaction not found");
+        }
+
+        var category = categoriesRepository.findById(body.getCategoryId())
+                .orElseThrow(() -> new NotFoundException("Category not found"));
+        if (!category.getCreatedBy().getId().equals(user.getId())) {
+            throw new NotFoundException("Name is already in use");
+
+        }
+
+        transaction.setDescription(body.getDescription());
+        transaction.setAmount(body.getAmount());
+        transaction.setType(body.getType());
+        transaction.setTransactionDate(body.getDate());
+        transaction.setTransactionCategory(category);
+
+        transactionRepository.save(transaction);
+    }
+
+    @Transactional
+    public GetTransactionsResponse.TransactionItem getTransactionById(String userEmail, Number id) {
+        Transaction transaction = transactionRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Transaction not found"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (!transaction.getCreatedBy().getId().equals(user.getId())) {
+            throw new NotFoundException("Transaction not found");
+        }
+
+        Hibernate.initialize(transaction.getTransactionCategory());
+
+        return new GetTransactionsResponse.TransactionItem(
+                transaction.getId(),
+                transaction.getAmount(),
+                transaction.getDescription(),
+                transaction.getCreatedAt().toString(),
+                transaction.getUpdatedAt().toString(),
+                transaction.getType().toString(),
+                new GetTransactionsResponse.CategoryItem(
+                        transaction.getTransactionCategory().getId(),
+                        transaction.getTransactionCategory().getName(),
+                        transaction.getTransactionCategory().getDescription(),
+                        transaction.getTransactionCategory().getCreatedAt().toString(),
+                        transaction.getTransactionCategory().getUpdatedAt().toString(),
+                        transaction.getTransactionCategory().getType().toString()
+                ),
+                transaction.getTransactionDate()
+        );
     }
 }

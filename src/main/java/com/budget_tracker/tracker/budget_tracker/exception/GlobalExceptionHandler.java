@@ -82,7 +82,6 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(value = {AccessDeniedException.class})
     public ResponseEntity<CustomErrorResponse> handleAccessDenied(AccessDeniedException ex, WebRequest request) {
         HttpStatus status = HttpStatus.FORBIDDEN;
-        System.out.println("Access Denied: " + ex.getMessage());
 
         CustomErrorResponse errorResponse = CustomErrorResponse.builder()
                 .timestamp(LocalDateTime.now())

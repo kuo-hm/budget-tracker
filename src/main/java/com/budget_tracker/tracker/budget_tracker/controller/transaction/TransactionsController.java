@@ -6,9 +6,12 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -54,4 +57,44 @@ public class TransactionsController {
         return ResponseEntity.ok(transactionService.getAllTransactions(param, userEmail));
     }
 
+    @DeleteMapping("{id}")
+    public ResponseEntity<String> deleteTransaction(@PathVariable String id,
+            HttpServletRequest httpRequest) {
+        String userEmail = (String) httpRequest.getAttribute("userEmail");
+        Number idNumber;
+        try {
+            idNumber = Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body("Invalid ID format");
+        }
+        transactionService.deleteTransaction(userEmail, idNumber);
+        return ResponseEntity.ok("Transaction deleted successfully");
+    }
+
+    @PutMapping("{id}")
+    public ResponseEntity<String> updateTransaction(@PathVariable String id,
+            @RequestBody CreateTransactionRequest request, HttpServletRequest httpRequest) {
+        String userEmail = (String) httpRequest.getAttribute("userEmail");
+        Number idNumber;
+        try {
+            idNumber = Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body("Invalid ID format");
+        }
+        transactionService.updateTransaction(request, userEmail, idNumber);
+        return ResponseEntity.ok("Transaction updated successfully");
+    }
+
+    @GetMapping("{id}")
+    public ResponseEntity<GetTransactionsResponse.TransactionItem> getTransactionById(@PathVariable String id,
+            HttpServletRequest httpRequest) {
+        String userEmail = (String) httpRequest.getAttribute("userEmail");
+        Number idNumber;
+        try {
+            idNumber = Long.parseLong(id);
+        } catch (NumberFormatException e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+        return ResponseEntity.ok(transactionService.getTransactionById(userEmail, idNumber));
+    }
 }

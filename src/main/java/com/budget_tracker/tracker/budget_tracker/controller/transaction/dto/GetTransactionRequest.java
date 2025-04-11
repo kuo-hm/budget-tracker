@@ -1,5 +1,7 @@
 package com.budget_tracker.tracker.budget_tracker.controller.transaction.dto;
 
+import java.time.LocalDate;
+
 import com.budget_tracker.tracker.budget_tracker.enums.CategoryType;
 
 import lombok.AllArgsConstructor;
@@ -20,6 +22,10 @@ public class GetTransactionRequest {
     private String sortBy;
 
     private String orderBy;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
 
     @Builder.Default
     private Integer limit = 10;

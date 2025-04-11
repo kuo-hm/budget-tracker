@@ -30,7 +30,6 @@ public class CategoriesService {
     private final UserRepository userRepository;
 
     public void createCategory(CreateCategoriesRequest request, String userEmail) {
-        System.out.println("userEmail: " + userEmail);
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new NotFoundException("User not found"));
         if (categoriesRepository.existsByNameAndType(request.getName(), request.getType())) {
@@ -64,8 +63,6 @@ public class CategoriesService {
             limit = 10;
         }
 
-        System.out.println(param);
-
         Pageable pageable = PageRequest.of(page, limit);
 
         if (param.getSortBy() != null && param.getOrderBy() != null) {
@@ -92,6 +89,62 @@ public class CategoriesService {
                 .toList();
 
         return new GetCategoriesResponse(categoryItems, metadata);
+    }
+
+    public void updateCategory(CreateCategoriesRequest request, String userEmail, Number id) {
+        Categories category = categoriesRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Category not found"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (!category.getCreatedBy().getId().equals(user.getId())) {
+
+            throw new NotFoundException("Category not founds");
+        }
+
+        if (categoriesRepository.existsByNameAndType(request.getName(), request.getType())) {
+            throw new ConflictException("Name is already in use");
+        }
+
+        category.setName(request.getName());
+        category.setDescription(request.getDescription());
+        category.setType(request.getType());
+        categoriesRepository.save(category);
+    }
+
+    @Transactional
+    public void deleteCategory(String userEmail, Number id) {
+        Categories category = categoriesRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Category not found"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (!category.getCreatedBy().getId().equals(user.getId())) {
+            throw new NotFoundException("Category not found");
+        }
+        Hibernate.initialize(category.getTransaction());
+
+        if (!category.getTransaction().isEmpty()) {
+            throw new ConflictException("Cannot delete category as it is referenced by transactions");
+        }
+
+        categoriesRepository.delete(category);
+    }
+
+    public GetCategoriesResponse.CategoryItem getCategory(String userEmail, Number id) {
+        Categories category = categoriesRepository.findById(id)
+                .orElseThrow(() -> new NotFoundException("Category not found"));
+        User user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new NotFoundException("User not found"));
+        if (!category.getCreatedBy().getId().equals(user.getId())) {
+            throw new NotFoundException("Category not found");
+        }
+        return new GetCategoriesResponse.CategoryItem(
+                category.getId(),
+                category.getName(),
+                category.getDescription(),
+                category.getCreatedAt().toString(),
+                category.getUpdatedAt().toString(),
+                category.getType().toString()
+        );
     }
 
 }
