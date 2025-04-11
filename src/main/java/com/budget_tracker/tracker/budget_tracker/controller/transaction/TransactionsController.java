@@ -6,12 +6,16 @@ import java.util.Map;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.budget_tracker.tracker.budget_tracker.controller.transaction.dto.CreateTransactionRequest;
+import com.budget_tracker.tracker.budget_tracker.controller.transaction.dto.GetTransactionRequest;
+import com.budget_tracker.tracker.budget_tracker.controller.transaction.dto.GetTransactionsResponse;
 import com.budget_tracker.tracker.budget_tracker.services.transaction.TransactionService;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -39,7 +43,15 @@ public class TransactionsController {
         String userEmail = (String) httpRequest.getAttribute("userEmail");
 
         transactionService.createTransaction(request, userEmail);
-        return ResponseEntity.ok("Transcation created successfully");
+        return ResponseEntity.ok("Transaction created successfully");
+    }
+
+    @GetMapping()
+    public ResponseEntity<GetTransactionsResponse> getAllTransactions(@ModelAttribute GetTransactionRequest param,
+            HttpServletRequest httpRequest) {
+        String userEmail = (String) httpRequest.getAttribute("userEmail");
+
+        return ResponseEntity.ok(transactionService.getAllTransactions(param, userEmail));
     }
 
 }

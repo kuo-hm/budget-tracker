@@ -1,15 +1,18 @@
-package com.budget_tracker.tracker.budget_tracker.controller.categories.dto;
+package com.budget_tracker.tracker.budget_tracker.controller.transaction.dto;
 
+import java.time.LocalDateTime;
 import java.util.List;
+
+import com.budget_tracker.tracker.budget_tracker.entity.Categories;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class GetCategoriesResponse {
+public class GetTransactionsResponse {
 
-    private List<CategoryItem> list;
+    private List<TransactionItem> list;
     private Metadata metadata;
 
     @Data
@@ -24,13 +27,18 @@ public class GetCategoriesResponse {
 
     @Data
     @AllArgsConstructor
-    public static class CategoryItem {
+    public static class TransactionItem {
 
         private Long id;
-        private String name;
+
+        private Double amount;
+
         private String description;
         private String createdAt;
         private String updatedAt;
         private String type;
+        private Categories transactionCategory;
+        private LocalDateTime transactionDate;
+
     }
 }
