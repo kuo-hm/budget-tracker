@@ -5,6 +5,8 @@ import java.time.LocalDateTime;
 import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
+
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -26,6 +28,7 @@ import lombok.NoArgsConstructor;
         name = "budget"
 )
 public class Budget {
+
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -42,9 +45,9 @@ public class Budget {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
-    
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonBackReference
     private User createdBy;
 
 }

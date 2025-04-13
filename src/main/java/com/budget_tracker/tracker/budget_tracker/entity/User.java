@@ -12,6 +12,7 @@ import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 
 import com.budget_tracker.tracker.budget_tracker.enums.Role;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -56,10 +57,15 @@ public class User implements UserDetails {
     private Role role;
 
     @OneToMany(mappedBy = "createdBy")
+    @JsonManagedReference
     private List<Categories> categories; // List of categories created by the user
+
     @OneToMany(mappedBy = "createdBy")
+    @JsonManagedReference
     private List<Transaction> transaction; // List of categories created by the user
+
     @OneToMany(mappedBy = "createdBy")
+    @JsonManagedReference
     private List<Budget> budget; // List of categories created by the user
 
     @Override

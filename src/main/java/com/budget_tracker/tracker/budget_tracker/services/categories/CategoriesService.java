@@ -2,7 +2,6 @@ package com.budget_tracker.tracker.budget_tracker.services.categories;
 
 import java.util.List;
 
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -19,7 +18,6 @@ import com.budget_tracker.tracker.budget_tracker.exception.common.NotFoundExcept
 import com.budget_tracker.tracker.budget_tracker.repositories.CategoriesRepository;
 import com.budget_tracker.tracker.budget_tracker.repositories.UserRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -45,12 +43,9 @@ public class CategoriesService {
         categoriesRepository.save(category);
     }
 
-    @Transactional
     public GetCategoriesResponse getAllCategories(GetCategoriesRequest param, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-
-        Hibernate.initialize(user.getCategories()); // Explicitly initialize the collection
 
         String keyword = (param != null) ? param.getKeyword() : null;
         String type = (param != null && param.getType() != null) ? param.getType().toString() : null;
@@ -111,7 +106,6 @@ public class CategoriesService {
         categoriesRepository.save(category);
     }
 
-    @Transactional
     public void deleteCategory(String userEmail, Number id) {
         Categories category = categoriesRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Category not found"));
@@ -120,7 +114,6 @@ public class CategoriesService {
         if (!category.getCreatedBy().getId().equals(user.getId())) {
             throw new NotFoundException("Category not found");
         }
-        Hibernate.initialize(category.getTransaction());
 
         if (!category.getTransaction().isEmpty()) {
             throw new ConflictException("Cannot delete category as it is referenced by transactions");

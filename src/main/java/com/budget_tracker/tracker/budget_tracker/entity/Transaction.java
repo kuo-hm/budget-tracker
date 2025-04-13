@@ -6,6 +6,8 @@ import org.hibernate.annotations.CreationTimestamp;
 import org.hibernate.annotations.UpdateTimestamp;
 
 import com.budget_tracker.tracker.budget_tracker.enums.CategoryType;
+import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -41,6 +43,7 @@ public class Transaction {
 
     @ManyToOne
     @JoinColumn(name = "transactionCategory", nullable = false)
+    @JsonManagedReference
     private Categories transactionCategory;
 
     @Enumerated(EnumType.STRING)
@@ -51,11 +54,12 @@ public class Transaction {
 
     @UpdateTimestamp
     private LocalDateTime updatedAt;
-    
+
     private LocalDateTime transactionDate;
 
     @ManyToOne
     @JoinColumn(name = "created_by", nullable = false)
+    @JsonBackReference
     private User createdBy;
 
 }

@@ -3,7 +3,6 @@ package com.budget_tracker.tracker.budget_tracker.services.transaction;
 import java.time.LocalDateTime;
 import java.util.List;
 
-import org.hibernate.Hibernate;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -20,7 +19,6 @@ import com.budget_tracker.tracker.budget_tracker.repositories.CategoriesReposito
 import com.budget_tracker.tracker.budget_tracker.repositories.TransactionRepository;
 import com.budget_tracker.tracker.budget_tracker.repositories.UserRepository;
 
-import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 
 @Service
@@ -53,12 +51,9 @@ public class TransactionService {
         transactionRepository.save(transactionEntity);
     }
 
-    @Transactional
     public GetTransactionsResponse getAllTransactions(GetTransactionRequest param, String userEmail) {
         User user = userRepository.findByEmail(userEmail)
                 .orElseThrow(() -> new NotFoundException("User not found"));
-
-        Hibernate.initialize(user.getCategories()); // Explicitly initialize the collection
 
         String keyword = (param != null) ? param.getKeyword() : null;
         String type = (param != null && param.getType() != null) ? param.getType().toString() : null;
@@ -87,7 +82,6 @@ public class TransactionService {
 
         List<GetTransactionsResponse.TransactionItem> transactionItems = transactionsPage.getContent().stream()
                 .map(transaction -> {
-                    Hibernate.initialize(transaction.getTransactionCategory());
                     GetTransactionsResponse.CategoryItem categoryItem = new GetTransactionsResponse.CategoryItem(
                             transaction.getTransactionCategory().getId(),
                             transaction.getTransactionCategory().getName(),
@@ -147,7 +141,6 @@ public class TransactionService {
         transactionRepository.save(transaction);
     }
 
-    @Transactional
     public GetTransactionsResponse.TransactionItem getTransactionById(String userEmail, Number id) {
         Transaction transaction = transactionRepository.findById(id)
                 .orElseThrow(() -> new NotFoundException("Transaction not found"));
@@ -156,8 +149,6 @@ public class TransactionService {
         if (!transaction.getCreatedBy().getId().equals(user.getId())) {
             throw new NotFoundException("Transaction not found");
         }
-
-        Hibernate.initialize(transaction.getTransactionCategory());
 
         return new GetTransactionsResponse.TransactionItem(
                 transaction.getId(),
