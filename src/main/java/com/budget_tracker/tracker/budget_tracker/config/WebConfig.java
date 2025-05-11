@@ -29,7 +29,8 @@ public class WebConfig implements WebMvcConfigurer {
                 .allowedOrigins(
                     "http://localhost:3000",
                     "http://localhost:5173",  // Vite default port
-                    "https://budget-tracker-frontend.vercel.app"  // Production URL
+                    "https://budget-tracker-frontend.vercel.app" ,
+                    "http://kuo-budget-tracker.online" // Production URL
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With")
