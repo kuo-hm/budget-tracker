@@ -30,7 +30,10 @@ public class WebConfig implements WebMvcConfigurer {
                     "http://localhost:3000",
                     "http://localhost:5173",  // Vite default port
                     "https://budget-tracker-frontend.vercel.app" ,
-                    "http://kuo-budget-tracker.online" // Production URL
+                    "http://kuo-budget-tracker.online" ,
+                    "https://kuo-budget-tracker.online" ,
+                    "http://185.197.251.224" ,
+                    "http://185.197.251.224:3000"
                 )
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With")
@@ -48,6 +51,11 @@ public class WebConfig implements WebMvcConfigurer {
         config.addAllowedOrigin("http://localhost:3000");
         config.addAllowedOrigin("http://localhost:5173");
         config.addAllowedOrigin("https://budget-tracker-frontend.vercel.app");
+        config.addAllowedOrigin("http://kuo-budget-tracker.online");
+        config.addAllowedOrigin("https://kuo-budget-tracker.online");
+        config.addAllowedOrigin("http://185.197.251.224");
+        config.addAllowedOrigin("http://185.197.251.224:3000");
+        
         
         // Allow all HTTP methods
         config.addAllowedMethod("*");
