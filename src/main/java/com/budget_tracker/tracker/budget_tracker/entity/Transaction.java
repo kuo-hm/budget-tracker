@@ -9,6 +9,7 @@ import com.budget_tracker.tracker.budget_tracker.enums.CategoryType;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 
+import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -55,6 +56,7 @@ public class Transaction {
     @UpdateTimestamp
     private LocalDateTime updatedAt;
 
+    @Column(name = "transaction_date")
     private LocalDateTime transactionDate;
 
     @ManyToOne
