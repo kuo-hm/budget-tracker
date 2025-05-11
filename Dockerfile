@@ -17,6 +17,9 @@ COPY .env .env
 # Build the application
 RUN ./mvnw clean package -DskipTests
 
+# Copy the built JAR to a fixed name
+RUN cp target/budget-tracker-*.jar app.jar
+
 # Expose the port
 EXPOSE 8001
 
@@ -24,4 +27,4 @@ EXPOSE 8001
 ENV SPRING_CONFIG_IMPORT=optional:file:.env[.properties]
 
 # Run the application
-ENTRYPOINT ["java", "-jar", "target/budget-tracker.jar"]
+ENTRYPOINT ["java", "-jar", "app.jar"]
