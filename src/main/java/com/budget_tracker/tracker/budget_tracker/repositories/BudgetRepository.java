@@ -9,6 +9,6 @@ import com.budget_tracker.tracker.budget_tracker.entity.User;
 
 public interface BudgetRepository extends JpaRepository<Budget, Number> {
 
-    List<Budget> findAllByCreatedBy(User user); // Assuming User is the entity class for users
+    List<Budget> findAllByCreatedBy(User user); 
 
 }

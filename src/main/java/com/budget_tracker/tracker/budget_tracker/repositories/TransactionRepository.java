@@ -16,14 +16,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Number
             + "(:keyword IS NULL OR LOWER(c.description) LIKE LOWER(CONCAT('%', :keyword, '%'))) AND "
             + "(:type IS NULL OR c.type = :type) AND "
             + "(:userId IS NULL OR c.created_by = :userId) AND "
-            // Use standard CAST syntax for both IS NULL checks and COALESCE
+            
             + "((CAST(:startDate AS TIMESTAMP) IS NULL AND CAST(:endDate AS TIMESTAMP) IS NULL) OR "
             + " (c.transaction_date BETWEEN "
             + "    COALESCE(CAST(:startDate AS TIMESTAMP), c.transaction_date) AND "
             + "    COALESCE(CAST(:endDate AS TIMESTAMP), c.transaction_date)))",
             nativeQuery = true)
     Page<Transaction> findByKeywordAndType(
-            @Param("keyword") String keyword, // Using @Param for clarity, though often optional if names match
+            @Param("keyword") String keyword, 
             @Param("type") String type,
             Pageable pageable,
             @Param("userId") String userId,

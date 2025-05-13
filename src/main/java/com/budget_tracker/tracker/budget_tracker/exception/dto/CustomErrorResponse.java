@@ -1,10 +1,10 @@
 package com.budget_tracker.tracker.budget_tracker.exception.dto;
 
 import java.time.LocalDateTime;
+
 import lombok.Builder;
 import lombok.Data;
 
-// Standardized error response
 @Data
 @Builder
 public class CustomErrorResponse {

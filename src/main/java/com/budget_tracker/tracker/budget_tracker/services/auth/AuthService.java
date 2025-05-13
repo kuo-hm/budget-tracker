@@ -3,6 +3,7 @@ package com.budget_tracker.tracker.budget_tracker.services.auth;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 
@@ -27,7 +28,6 @@ public class AuthService {
     private final AuthenticationManager authenticationManager;
 
     public AuthenticationResponse register(RegisterRequest request) {
-
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("Email is already in use");
         }
@@ -41,28 +41,50 @@ public class AuthService {
                 .build();
         userRepository.save(user);
 
-        var jwtToken = jwtService.generateToken(user);
+        var accessToken = jwtService.generateToken(user);
+        var refreshToken = jwtService.generateRefreshToken(user);
+        
         return AuthenticationResponse.builder()
-                .token(jwtToken)
+                .accessToken(accessToken)
+                .refreshToken(refreshToken)
                 .build();
     }
 
     public AuthenticationResponse login(LoginRequest request) {
-
         Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
         if (authenticate.isAuthenticated()) {
+            var user = userRepository.findByEmail(request.getEmail())
+                    .orElseThrow(() -> new NotFoundException("User not found"));
 
-            var user = userRepository.findByEmail(request.getEmail()).orElseThrow(() -> new NotFoundException("User not found"));
-
-            var jwtToken = jwtService.generateToken(user);
+            var accessToken = jwtService.generateToken(user);
+            var refreshToken = jwtService.generateRefreshToken(user);
+            
             return AuthenticationResponse.builder()
-                    .token(jwtToken)
+                    .accessToken(accessToken)
+                    .refreshToken(refreshToken)
                     .build();
         } else {
             throw new UsernameNotFoundException("Invalid user request");
         }
     }
 
+    public AuthenticationResponse refreshToken(String refreshToken) {
+        String userEmail = jwtService.extractUsername(refreshToken);
+        UserDetails user = userRepository.findByEmail(userEmail)
+                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+
+        if (jwtService.isTokenValid(refreshToken, user)) {
+            var accessToken = jwtService.generateToken(user);
+            var newRefreshToken = jwtService.generateRefreshToken(user);
+            
+            return AuthenticationResponse.builder()
+                    .accessToken(accessToken)
+                    .refreshToken(newRefreshToken)
+                    .build();
+        } else {
+            throw new RuntimeException("Invalid refresh token");
+        }
+    }
 }

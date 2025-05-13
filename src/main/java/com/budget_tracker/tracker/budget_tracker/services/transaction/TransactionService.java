@@ -57,8 +57,8 @@ public class TransactionService {
 
         String keyword = (param != null) ? param.getKeyword() : null;
         String type = (param != null && param.getType() != null) ? param.getType().toString() : null;
-        int limit = (param != null && param.getLimit() != null) ? param.getLimit() : 10; // Added null check for param.getLimit()
-        int page = (param != null && param.getPage() != null) ? param.getPage() - 1 : 0; // Added null check for param.getPage()
+        int limit = (param != null && param.getLimit() != null) ? param.getLimit() : 10; 
+        int page = (param != null && param.getPage() != null) ? param.getPage() - 1 : 0; 
         LocalDateTime startDate = (param != null && param.getStartDate() != null) ? param.getStartDate().atStartOfDay() : null;
         LocalDateTime endDate = (param != null && param.getEndDate() != null) ? param.getEndDate().atTime(23, 59, 59) : null;
 

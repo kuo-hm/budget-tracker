@@ -18,7 +18,7 @@ import lombok.RequiredArgsConstructor;
 public class UserService {
 
     private final UserRepository userRepository;
-    private final BCryptPasswordEncoder passwordEncoder; // Injected BCryptPasswordEncoder
+    private final BCryptPasswordEncoder passwordEncoder; 
 
     public UserDetailResponse me(String userEmail) {
         User user = userRepository.findByEmail(userEmail)
@@ -46,7 +46,7 @@ public class UserService {
         }
 
         if (request.getPassword() != null && !request.getPassword().isEmpty()) {
-            user.setPassword(request.getPassword(), passwordEncoder); // Hash password
+            user.setPassword(request.getPassword(), passwordEncoder); 
         }
 
         userRepository.save(user);

@@ -13,28 +13,22 @@ import org.springframework.web.servlet.config.annotation.WebMvcConfigurer;
 public class WebConfig implements WebMvcConfigurer {
 
     private final JwtInterceptor jwtInterceptor;
+    private final CorsProperties corsProperties;
 
-    public WebConfig(JwtInterceptor jwtInterceptor) {
+    public WebConfig(JwtInterceptor jwtInterceptor, CorsProperties corsProperties) {
         this.jwtInterceptor = jwtInterceptor;
+        this.corsProperties = corsProperties;
     }
 
     @Override
     public void addInterceptors(InterceptorRegistry registry) {
-        registry.addInterceptor(jwtInterceptor).addPathPatterns("/**", "/**", "/**", "/**"); // Apply only to user endpoints
+        registry.addInterceptor(jwtInterceptor).addPathPatterns("/**", "/**", "/**", "/**"); 
     }
 
     @Override
     public void addCorsMappings(CorsRegistry registry) {
         registry.addMapping("/**")
-                .allowedOrigins(
-                    "http://localhost:3000",
-                    "http://localhost:5173",  // Vite default port
-                    "https://budget-tracker-frontend.vercel.app" ,
-                    "http://kuo-budget-tracker.online" ,
-                    "https://kuo-budget-tracker.online" ,
-                    "http://185.197.251.224" ,
-                    "http://185.197.251.224:3000"
-                )
+                .allowedOrigins(corsProperties.getAllowedOrigins().toArray(new String[0]))
                 .allowedMethods("GET", "POST", "PUT", "DELETE", "OPTIONS", "PATCH")
                 .allowedHeaders("Authorization", "Content-Type", "Accept", "Origin", "X-Requested-With")
                 .exposedHeaders("Authorization")
@@ -47,26 +41,19 @@ public class WebConfig implements WebMvcConfigurer {
         UrlBasedCorsConfigurationSource source = new UrlBasedCorsConfigurationSource();
         CorsConfiguration config = new CorsConfiguration();
         
-        // Allow all origins for development
-        config.addAllowedOrigin("http://localhost:3000");
-        config.addAllowedOrigin("http://localhost:5173");
-        config.addAllowedOrigin("https://budget-tracker-frontend.vercel.app");
-        config.addAllowedOrigin("http://kuo-budget-tracker.online");
-        config.addAllowedOrigin("https://kuo-budget-tracker.online");
-        config.addAllowedOrigin("http://185.197.251.224");
-        config.addAllowedOrigin("http://185.197.251.224:3000");
+        
+        corsProperties.getAllowedOrigins().forEach(config::addAllowedOrigin);
         
         
-        // Allow all HTTP methods
         config.addAllowedMethod("*");
         
-        // Allow all headers
+        
         config.addAllowedHeader("*");
         
-        // Allow credentials
+        
         config.setAllowCredentials(true);
         
-        // Apply this configuration to all paths
+        
         source.registerCorsConfiguration("/**", config);
         
         return new CorsFilter(source);

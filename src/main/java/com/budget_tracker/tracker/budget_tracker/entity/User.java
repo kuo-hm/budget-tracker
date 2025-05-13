@@ -58,15 +58,15 @@ public class User implements UserDetails {
 
     @OneToMany(mappedBy = "createdBy")
     @JsonManagedReference
-    private List<Categories> categories; // List of categories created by the user
+    private List<Categories> categories; 
 
     @OneToMany(mappedBy = "createdBy")
     @JsonManagedReference
-    private List<Transaction> transaction; // List of categories created by the user
+    private List<Transaction> transaction; 
 
     @OneToMany(mappedBy = "createdBy")
     @JsonManagedReference
-    private List<Budget> budget; // List of categories created by the user
+    private List<Budget> budget; 
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

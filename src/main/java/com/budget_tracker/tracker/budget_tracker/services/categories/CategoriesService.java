@@ -64,7 +64,7 @@ public class CategoriesService {
 
         String keyword = (param != null) ? param.getKeyword() : null;
         String type = (param != null && param.getType() != null) ? param.getType().toString() : null;
-        int limit = Math.min(param.getLimit(), 100); // Cap at 100 items per page
+        int limit = Math.min(param.getLimit(), 100); 
         int page = Math.max(param.getPage() - 1, 0);
 
         Pageable pageable = PageRequest.of(page, limit);
