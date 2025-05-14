@@ -11,6 +11,9 @@ import org.springframework.security.web.authentication.WebAuthenticationDetailsS
 import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
+import com.budget_tracker.tracker.budget_tracker.entity.User;
+import com.budget_tracker.tracker.budget_tracker.exception.common.UnauthorizedException;
+
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -55,6 +58,16 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                 UserDetails userDetails = this.userDetailsService.loadUserByUsername(userEmail);
 
                 if (jwtService.isTokenValid(jwtToken, userDetails)) {
+                    // Check if user is verified, unless they're accessing verification endpoints
+                    String requestPath = request.getRequestURI();
+                    boolean isVerificationPath = requestPath.startsWith("/auth/verify") || 
+                                                requestPath.startsWith("/auth/resend-verification");
+                    
+                    User user = (User) userDetails;
+                    if (!user.isEnabled() && !isVerificationPath && !requestPath.startsWith("/auth")) {
+                        throw new UnauthorizedException("Account not verified. Please verify your email before accessing this resource.");
+                    }
+                    
                     UsernamePasswordAuthenticationToken authenticationToken =
                             new UsernamePasswordAuthenticationToken(
                                     userDetails,

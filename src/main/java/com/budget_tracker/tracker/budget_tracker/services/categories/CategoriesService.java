@@ -64,12 +64,12 @@ public class CategoriesService {
 
         String keyword = (param != null) ? param.getKeyword() : null;
         String type = (param != null && param.getType() != null) ? param.getType().toString() : null;
-        int limit = Math.min(param.getLimit(), 100); 
-        int page = Math.max(param.getPage() - 1, 0);
+        int limit = (param != null) ? Math.min(param.getLimit(), 100) : 10; 
+        int page = (param != null) ? Math.max(param.getPage() - 1, 0) : 0;
 
         Pageable pageable = PageRequest.of(page, limit);
 
-        if (param.getSortBy() != null && param.getOrderBy() != null) {
+        if (param != null && param.getSortBy() != null && param.getOrderBy() != null) {
             Sort.Direction direction = param.getOrderBy().equalsIgnoreCase("asc") ? 
                 Sort.Direction.ASC : Sort.Direction.DESC;
             pageable = PageRequest.of(page, limit, Sort.by(direction, param.getSortBy()));

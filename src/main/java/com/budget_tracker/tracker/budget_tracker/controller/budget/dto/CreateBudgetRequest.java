@@ -16,4 +16,6 @@ public class CreateBudgetRequest {
     private String description;
 
     private Double amount;
+    
+    private Long categoryId;
 }

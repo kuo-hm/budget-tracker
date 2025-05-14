@@ -9,15 +9,18 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.validation.BindingResult;
 import org.springframework.validation.FieldError;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.AuthenticationResponse;
 import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.LoginRequest;
 import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.RegisterRequest;
 import com.budget_tracker.tracker.budget_tracker.services.auth.AuthService;
+import com.budget_tracker.tracker.budget_tracker.services.auth.VerificationService;
 
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
@@ -29,6 +32,7 @@ import lombok.RequiredArgsConstructor;
 public class AuthController {
 
     private final AuthService authService;
+    private final VerificationService verificationService;
 
     @PostMapping("/register")
     public ResponseEntity<?> register(
@@ -160,5 +164,25 @@ public class AuthController {
                 .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
                 .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
                 .body(Map.of("message", "Logout successful"));
+    }
+    
+    @GetMapping("/verify")
+    public ResponseEntity<?> verifyAccount(@RequestParam("token") String token) {
+        try {
+            verificationService.verifyAccount(token);
+            return ResponseEntity.ok(Map.of("message", "Account successfully verified"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
+    }
+    
+    @PostMapping("/resend-verification")
+    public ResponseEntity<?> resendVerificationEmail(@RequestParam("email") String email) {
+        try {
+            verificationService.resendVerificationEmail(email);
+            return ResponseEntity.ok(Map.of("message", "Verification email resent"));
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));
+        }
     }
 }

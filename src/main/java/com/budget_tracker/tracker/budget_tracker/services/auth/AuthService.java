@@ -6,6 +6,7 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import com.budget_tracker.tracker.budget_tracker.config.JwtService;
 import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.AuthenticationResponse;
@@ -26,7 +27,9 @@ public class AuthService {
     private final UserRepository userRepository;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
+    private final VerificationService verificationService;
 
+    @Transactional
     public AuthenticationResponse register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("Email is already in use");
@@ -38,8 +41,13 @@ public class AuthService {
                 .email(request.getEmail())
                 .password(request.getPassword())
                 .role(Role.USER)
+                .enabled(false) // Account is initially disabled until verified
                 .build();
-        userRepository.save(user);
+        
+        User savedUser = userRepository.save(user);
+        
+        // Generate verification token and send email
+        verificationService.generateVerificationToken(savedUser);
 
         var accessToken = jwtService.generateToken(user);
         var refreshToken = jwtService.generateRefreshToken(user);
@@ -47,6 +55,7 @@ public class AuthService {
         return AuthenticationResponse.builder()
                 .accessToken(accessToken)
                 .refreshToken(refreshToken)
+                .verified(false)
                 .build();
     }
 
@@ -64,6 +73,7 @@ public class AuthService {
             return AuthenticationResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(refreshToken)
+                    .verified(user.isEnabled())
                     .build();
         } else {
             throw new UsernameNotFoundException("Invalid user request");
@@ -82,6 +92,7 @@ public class AuthService {
             return AuthenticationResponse.builder()
                     .accessToken(accessToken)
                     .refreshToken(newRefreshToken)
+                    .verified(((User) user).isEnabled())
                     .build();
         } else {
             throw new RuntimeException("Invalid refresh token");

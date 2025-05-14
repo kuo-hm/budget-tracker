@@ -21,6 +21,7 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.PrePersist;
 import jakarta.persistence.PreUpdate;
 import jakarta.persistence.Table;
@@ -55,7 +56,12 @@ public class User implements UserDetails {
     private LocalDateTime updatedAt;
     @Enumerated(EnumType.STRING)
     private Role role;
+    
+    private boolean enabled = false;
+    private String verificationToken;
+    private LocalDateTime verificationTokenExpiry;
 
+    
     @OneToMany(mappedBy = "createdBy")
     @JsonManagedReference
     private List<Categories> categories; 
@@ -67,6 +73,18 @@ public class User implements UserDetails {
     @OneToMany(mappedBy = "createdBy")
     @JsonManagedReference
     private List<Budget> budget; 
+
+    @OneToMany(mappedBy = "createdBy")
+    @JsonManagedReference
+    private List<Goal> goals;
+    
+    @OneToMany(mappedBy = "user")
+    @JsonManagedReference
+    private List<Achievement> achievements;
+    
+    @OneToOne(mappedBy = "user")
+    @JsonManagedReference
+    private UserProgress userProgress;
 
     @Override
     public Collection<? extends GrantedAuthority> getAuthorities() {

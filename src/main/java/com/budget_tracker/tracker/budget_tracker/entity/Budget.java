@@ -49,5 +49,9 @@ public class Budget {
     @JoinColumn(name = "created_by", nullable = false)
     @JsonBackReference
     private User createdBy;
+    
+    @ManyToOne
+    @JoinColumn(name = "category_id")
+    private Categories category;
 
 }

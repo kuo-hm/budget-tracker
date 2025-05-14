@@ -18,6 +18,7 @@ import com.budget_tracker.tracker.budget_tracker.exception.common.NotFoundExcept
 import com.budget_tracker.tracker.budget_tracker.repositories.CategoriesRepository;
 import com.budget_tracker.tracker.budget_tracker.repositories.TransactionRepository;
 import com.budget_tracker.tracker.budget_tracker.repositories.UserRepository;
+import com.budget_tracker.tracker.budget_tracker.services.gamification.GamificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -28,6 +29,7 @@ public class TransactionService {
     private final CategoriesRepository categoriesRepository;
     private final UserRepository userRepository;
     private final TransactionRepository transactionRepository;
+    private final GamificationService gamificationService;
 
     public void createTransaction(CreateTransactionRequest body, String userEmail) {
         var user = userRepository.findByEmail(userEmail)
@@ -48,7 +50,10 @@ public class TransactionService {
         transactionEntity.setTransactionCategory(category);
         transactionEntity.setCreatedBy(user);
 
-        transactionRepository.save(transactionEntity);
+        Transaction savedTransaction = transactionRepository.save(transactionEntity);
+        
+        // Process transaction for gamification features
+        gamificationService.processTransaction(savedTransaction);
     }
 
     public GetTransactionsResponse getAllTransactions(GetTransactionRequest param, String userEmail) {
@@ -68,7 +73,7 @@ public class TransactionService {
 
         Pageable pageable = PageRequest.of(page, limit);
 
-        if (param.getSortBy() != null && param.getOrderBy() != null) {
+        if (param != null && param.getSortBy() != null && param.getOrderBy() != null) {
             pageable = PageRequest.of(page, limit, param.getOrderBy().equalsIgnoreCase("asc") ? Sort.by(param.getSortBy()).ascending() : Sort.by(param.getSortBy()).descending());
         }
 
@@ -138,7 +143,10 @@ public class TransactionService {
         transaction.setTransactionDate(body.getDate());
         transaction.setTransactionCategory(category);
 
-        transactionRepository.save(transaction);
+        Transaction updatedTransaction = transactionRepository.save(transaction);
+        
+        // Process updated transaction for gamification features
+        gamificationService.processTransaction(updatedTransaction);
     }
 
     public GetTransactionsResponse.TransactionItem getTransactionById(String userEmail, Number id) {

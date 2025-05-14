@@ -73,6 +73,10 @@ websocket:
   endpoint: /ws
   allowed-origins: http://localhost:3000
 
+app:
+  frontend-url: ${APP_FRONTEND_URL:http://localhost:3000}
+  token-expiration-hours: 24
+
 application:
   security:
     jwt:

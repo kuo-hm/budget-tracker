@@ -9,11 +9,9 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 
 public class JwtAuthenticationProvider implements AuthenticationProvider {
 
-    private final JwtService jwtService;
     private final UserDetailsService userDetailsService;
 
-    public JwtAuthenticationProvider(JwtService jwtService, UserDetailsService userDetailsService) {
-        this.jwtService = jwtService;
+    public JwtAuthenticationProvider(UserDetailsService userDetailsService) {
         this.userDetailsService = userDetailsService;
     }
 

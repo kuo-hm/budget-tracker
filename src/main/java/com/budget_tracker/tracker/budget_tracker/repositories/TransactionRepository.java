@@ -1,6 +1,7 @@
 package com.budget_tracker.tracker.budget_tracker.repositories;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -9,6 +10,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import com.budget_tracker.tracker.budget_tracker.entity.Transaction;
+import com.budget_tracker.tracker.budget_tracker.entity.User;
 
 public interface TransactionRepository extends JpaRepository<Transaction, Number> {
 
@@ -29,4 +31,14 @@ public interface TransactionRepository extends JpaRepository<Transaction, Number
             @Param("userId") String userId,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate);
+            
+    // Dashboard related queries
+    List<Transaction> findAllByCreatedByAndTransactionDateBetween(
+            User user, LocalDateTime startDate, LocalDateTime endDate);
+            
+    List<Transaction> findAllByTransactionDateBetween(
+            LocalDateTime startDate, LocalDateTime endDate);
+            
+    List<Transaction> findByCreatedByOrderByTransactionDateDesc(
+            User user, Pageable pageable);
 }
