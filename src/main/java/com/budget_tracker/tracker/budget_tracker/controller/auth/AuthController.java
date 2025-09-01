@@ -3,6 +3,8 @@ package com.budget_tracker.tracker.budget_tracker.controller.auth;
 import java.util.HashMap;
 import java.util.Map;
 
+import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.RefreshTokenRequest;
+import com.budget_tracker.tracker.budget_tracker.entity.TokenPair;
 import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
@@ -50,7 +52,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(errors);
         }
 
-        AuthenticationResponse authResponse = authService.register(request);
+        TokenPair authResponse = authService.register(request);
         
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", authResponse.getAccessToken())
                 .httpOnly(true)
@@ -88,7 +90,7 @@ public class AuthController {
             return ResponseEntity.badRequest().body(errors);
         }
 
-        AuthenticationResponse authResponse = authService.login(request);
+        TokenPair authResponse = authService.login(request);
         
         ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", authResponse.getAccessToken())
                 .httpOnly(true)
@@ -110,38 +112,10 @@ public class AuthController {
                 .body(Map.of("message", "Login successful"));
     }
 
-    @PostMapping("/refresh")
-    public ResponseEntity<?> refreshToken(
-            @CookieValue(name = "refreshToken", required = false) String refreshToken
-    ) {
-        if (refreshToken == null) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Refresh token is missing"));
-        }
-
-        try {
-            AuthenticationResponse authResponse = authService.refreshToken(refreshToken);
-            
-            ResponseCookie accessTokenCookie = ResponseCookie.from("accessToken", authResponse.getAccessToken())
-                    .httpOnly(true)
-                    .secure(true)
-                    .path("/")
-                    .maxAge(15 * 60) 
-                    .build();
-
-            ResponseCookie refreshTokenCookie = ResponseCookie.from("refreshToken", authResponse.getRefreshToken())
-                    .httpOnly(true)
-                    .secure(true)
-                    .path("/")
-                    .maxAge(7 * 24 * 60 * 60) // 7 days
-                    .build();
-            
-            return ResponseEntity.ok()
-                    .header(HttpHeaders.SET_COOKIE, accessTokenCookie.toString())
-                    .header(HttpHeaders.SET_COOKIE, refreshTokenCookie.toString())
-                    .body(Map.of("message", "Token refresh successful"));
-        } catch (Exception e) {
-            return ResponseEntity.badRequest().body(Map.of("error", "Invalid refresh token"));
-        }
+    @PostMapping("/refresh-token")
+    public ResponseEntity<?> refreshToken(@Valid @RequestBody RefreshTokenRequest request) {
+        TokenPair tokenPair = authService.refreshToken(request);
+        return ResponseEntity.ok(tokenPair);
     }
 
     @PostMapping("/logout")

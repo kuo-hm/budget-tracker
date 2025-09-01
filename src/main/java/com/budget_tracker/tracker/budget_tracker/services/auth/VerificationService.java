@@ -11,7 +11,6 @@ import com.budget_tracker.tracker.budget_tracker.entity.User;
 import com.budget_tracker.tracker.budget_tracker.exception.common.NotFoundException;
 import com.budget_tracker.tracker.budget_tracker.repositories.UserRepository;
 import com.budget_tracker.tracker.budget_tracker.services.email.EmailService;
-import com.budget_tracker.tracker.budget_tracker.services.gamification.GamificationService;
 
 import lombok.RequiredArgsConstructor;
 
@@ -21,8 +20,7 @@ public class VerificationService {
 
     private final UserRepository userRepository;
     private final EmailService emailService;
-    private final GamificationService gamificationService;
-    
+
     @Value("${app.token-expiration-hours:24}")
     private int tokenExpirationHours;
     
@@ -59,8 +57,6 @@ public class VerificationService {
         user.setVerificationTokenExpiry(null);
         userRepository.save(user);
         
-        // Initialize user progress for gamification
-        gamificationService.initializeUserProgress(user);
     }
     
     /**

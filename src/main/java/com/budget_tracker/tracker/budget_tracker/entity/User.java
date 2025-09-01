@@ -113,14 +113,14 @@ public class User implements UserDetails {
         return password;
     }
 
-    @PrePersist
-    @PreUpdate
-    public void encodePassword() {
-        if (this.password != null && !this.password.isEmpty()) {
-            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
-            this.password = encoder.encode(this.password);
-        }
-    }
+//    @PrePersist
+//    @PreUpdate
+//    public void encodePassword() {
+//        if (this.password != null && !this.password.isEmpty()) {
+//            BCryptPasswordEncoder encoder = new BCryptPasswordEncoder();
+//            this.password = encoder.encode(this.password);
+//        }
+//    }
 
     public void setPassword(String password, BCryptPasswordEncoder passwordEncoder) {
         if (password != null && !password.isEmpty()) {

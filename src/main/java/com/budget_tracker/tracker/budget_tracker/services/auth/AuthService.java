@@ -1,14 +1,21 @@
 package com.budget_tracker.tracker.budget_tracker.services.auth;
 
+import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.RefreshTokenRequest;
+import com.budget_tracker.tracker.budget_tracker.entity.TokenPair;
+import com.budget_tracker.tracker.budget_tracker.services.jwt.JwtService;
+import com.budget_tracker.tracker.budget_tracker.services.user.EmailUserDetailsService;
+import jakarta.validation.Valid;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import com.budget_tracker.tracker.budget_tracker.config.JwtService;
 import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.AuthenticationResponse;
 import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.LoginRequest;
 import com.budget_tracker.tracker.budget_tracker.controller.auth.dto.RegisterRequest;
@@ -28,9 +35,12 @@ public class AuthService {
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
     private final VerificationService verificationService;
+    private final PasswordEncoder passwordEncoder;
+    private final EmailUserDetailsService userDetailsService;
+
 
     @Transactional
-    public AuthenticationResponse register(RegisterRequest request) {
+    public TokenPair register(RegisterRequest request) {
         if (userRepository.existsByEmail(request.getEmail())) {
             throw new ConflictException("Email is already in use");
         }
@@ -39,63 +49,65 @@ public class AuthService {
                 .firstName(request.getFirstName())
                 .lastName(request.getLastName())
                 .email(request.getEmail())
-                .password(request.getPassword())
+                .password(passwordEncoder.encode(request.getPassword()))
                 .role(Role.USER)
-                .enabled(false) // Account is initially disabled until verified
+                .enabled(false)
                 .build();
-        
+
         User savedUser = userRepository.save(user);
-        
-        // Generate verification token and send email
+
         verificationService.generateVerificationToken(savedUser);
 
-        var accessToken = jwtService.generateToken(user);
-        var refreshToken = jwtService.generateRefreshToken(user);
-        
-        return AuthenticationResponse.builder()
-                .accessToken(accessToken)
-                .refreshToken(refreshToken)
-                .verified(false)
-                .build();
+        // Auto-authenticate the newly registered user
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword() // Use raw password before encoding
+                )
+        );
+
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return jwtService.generateTokenPair(authentication);
     }
 
-    public AuthenticationResponse login(LoginRequest request) {
-        Authentication authenticate = authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(request.getEmail(), request.getPassword()));
 
-        if (authenticate.isAuthenticated()) {
-            var user = userRepository.findByEmail(request.getEmail())
-                    .orElseThrow(() -> new NotFoundException("User not found"));
+    public TokenPair login(LoginRequest request) {
+        // Authenticate the user
+        Authentication authentication = authenticationManager.authenticate(
+                new UsernamePasswordAuthenticationToken(
+                        request.getEmail(),
+                        request.getPassword()
+                )
+        );
 
-            var accessToken = jwtService.generateToken(user);
-            var refreshToken = jwtService.generateRefreshToken(user);
-            
-            return AuthenticationResponse.builder()
-                    .accessToken(accessToken)
-                    .refreshToken(refreshToken)
-                    .verified(user.isEnabled())
-                    .build();
-        } else {
-            throw new UsernameNotFoundException("Invalid user request");
-        }
+        SecurityContextHolder.getContext().setAuthentication(authentication);
+
+        return jwtService.generateTokenPair(authentication);
     }
 
-    public AuthenticationResponse refreshToken(String refreshToken) {
-        String userEmail = jwtService.extractUsername(refreshToken);
-        UserDetails user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new UsernameNotFoundException("User not found"));
+    public TokenPair refreshToken(@Valid RefreshTokenRequest request) {
 
-        if (jwtService.isTokenValid(refreshToken, user)) {
-            var accessToken = jwtService.generateToken(user);
-            var newRefreshToken = jwtService.generateRefreshToken(user);
-            
-            return AuthenticationResponse.builder()
-                    .accessToken(accessToken)
-                    .refreshToken(newRefreshToken)
-                    .verified(((User) user).isEnabled())
-                    .build();
-        } else {
-            throw new RuntimeException("Invalid refresh token");
+        String refreshToken = request.getRefreshToken();
+        if(!jwtService.isRefreshToken(refreshToken)) {
+            throw new IllegalArgumentException("Invalid refresh token");
         }
+
+        String user = jwtService.extractUsernameFromToken(refreshToken);
+        UserDetails userDetails = userDetailsService.loadUserByUsername(user);
+
+        if (userDetails == null) {
+            throw new IllegalArgumentException("User not found");
+        }
+
+        UsernamePasswordAuthenticationToken authentication =
+                new UsernamePasswordAuthenticationToken(
+                        userDetails,
+                        null,
+                        userDetails.getAuthorities()
+                );
+
+        String accessToken = jwtService.generateAccessToken(authentication);
+        return new TokenPair(accessToken, refreshToken);
     }
 }
